@@ -446,7 +446,7 @@ If your tenant **requires admin consent for all applications** (most enterprises
    - Optional connections/connectors/Power Apps: PowerApps Service (`475226c6-020e-4fb2-8a90-7a972cbfc1d4`) `User`
    - Optional Dataverse/admin/Power Pages config: BAP Admin API (`0e0bf3cc-3078-4fd4-9ef3-cb6dc0245b10`) `user_impersonation`
    - Optional Dataverse/Power Pages config: Dynamics CRM (`00000007-0000-0000-c000-000000000000`) `user_impersonation`
-   - Power Platform API (`8578e004-a5c6-46e7-913e-12f58912df43`): a delegated permission — **optional**, only for the Power Pages site-management tools. The Power Pages config tools (Dataverse) don't need it.
+   - Power Platform API (`8578e004-a5c6-46e7-913e-12f58912df43`): `ResourceQuery.Resources.Read` for tenant-wide Copilot inventory; `CopilotStudio.Copilots.Invoke` for authenticated execution; `CopilotStudio.MakerOperations.Read` and `CopilotStudio.MakerOperations.ReadWrite` for evaluations; `CopilotStudio.AdminActions.Invoke` for governance; `PowerPages.Websites.Read` and `PowerPages.Websites.Write` for optional Power Pages site-management tools. Automatic setup resolves the tenant-local scope IDs; manually managed registrations must add the delegated scopes and have an Entra administrator grant consent. Refresh the signed-in session afterward; re-running setup cannot grant admin consent.
 
 2. **Grant admin consent** for the selected permissions:
    ```
