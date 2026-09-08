@@ -6,6 +6,9 @@ This guide gets you from zero to "ask your AI app to build a flow." Pick the pat
 
 ## Choose your path
 
+For large tool catalogs, see [Token-efficient client setup](docs/TOKEN-EFFICIENCY.md).
+All tools remain available; supported clients discover full schemas on demand.
+
 | You are… | Go to |
 |----------|-------|
 | 🟢 **Not very technical** — you just want it working | [Easy Path](#easy-path-3-steps) |
