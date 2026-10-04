@@ -5,7 +5,7 @@
     "url": "https://github.com/rcb0727/powerplatform-mcp-docs"
   },
   "metadata": {
-    "description": "Power Platform from your AI client — 216 tools across Power Automate, Dataverse, SharePoint, Power Apps, Power Pages, desktop flows (RPA), and tenant governance.",
+    "description": "Power Platform from your AI client: 310 tools across Power Automate, Dataverse, SharePoint, Power Apps, Power Pages, Copilot Studio, desktop flows (RPA), and tenant governance.",
     "pluginRoot": "."
   },
   "plugins": [
