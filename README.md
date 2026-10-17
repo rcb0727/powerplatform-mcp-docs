@@ -854,7 +854,7 @@ This server implements defense-in-depth security hardened through 3 rounds of pe
 - **Error Sanitization**: Recursive sensitive key redaction (tokens, passwords, secrets), PII removal, stack trace suppression
 - **Log Redaction**: Deep wildcard Pino redaction for auth headers, tokens, API keys
 - **HTTP Transport Security**: Localhost-only binding, session-based Streamable HTTP, timing-safe API key comparison
-- **Resource Limits**: 2MB input size limit, 20-level depth limit, 50MB JSON response limit, 100MB binary download limit
+- **Resource Limits**: 2MB input size limit, 20-level depth limit, 200,000-element input limit, 50MB JSON response limit, 100MB binary download limit
 - **Config Hardening**: File permissions (0o600), symlink rejection, world-readable warnings
 - **Auth Safety**: Token refresh mutex, MSAL PII filtering, MSAL verbose/trace suppression, silent-only mode in server
 
