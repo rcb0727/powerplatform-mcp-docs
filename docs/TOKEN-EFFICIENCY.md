@@ -28,6 +28,14 @@ conversation. Auto also selects connectors dynamically. Verify your actual
 local extension/client; the documentation does not guarantee identical loading
 granularity for every integration. [Official tool-access settings](https://support.claude.com/en/articles/13730515-manage-claude-s-tool-access)
 
+## Codex and API clients
+
+Use the host's native MCP discovery and tool search when exposed. Keep the
+complete catalog enabled so the client can retrieve the original schemas and
+safety annotations. OpenAI API `tool_search` and `defer_loading` options belong
+in a supported API client request, not in this MCP server's configuration.
+See the [official OpenAI documentation](https://developers.openai.com/api/docs/guides/tools-tool-search).
+
 ## Keep reference material out of startup
 
 `CLAUDE.md` keeps workflow and safety rules, plus an ordinary link to
@@ -61,6 +69,7 @@ unavailable, permission-denied and truncated-result distinctions.
 ## Measure from a repository checkout
 
 ```sh
+npm run context:check
 npm run context:measure
 npm run context:measure -- --baseline-ref <full-40-character-local-commit-sha>
 npm run docs:check
@@ -79,6 +88,38 @@ discovery descriptions agent-neutral and renames one runtime diagnostic field
 (see the migration note below), so the full catalog and every output are not
 byte-for-byte unchanged. Future intentional changes require reviewing fingerprints
 and counts; never refresh them just to hide lost capabilities.
+
+## Review context growth before merging
+
+`npm run context:check` reads `.github/mcp-context-budgets.json` and exits
+nonzero when a reviewed byte limit is exceeded or a scenario names a missing
+tool. CI runs this gate in addition to the existing contract and feature tests.
+The same gate also runs in the unit suite used by local release checks.
+
+The limits cover the full `tools/list` result, names plus initialization
+instructions, each complete tool definition, each description, and nine task
+selections: flow triage, Copilot source review, Canvas control discovery,
+SharePoint content, Dataverse data, environment administration, Power Pages
+content, Power Pages management and AI Builder prompt versions/tests. Each selection includes the original full
+schemas and safety annotations, plus every tool name and the server guidance.
+These selections measure payload size; they do not execute the selected tools.
+
+The report includes current catalog, contract and safety fingerprints. Existing
+contract tests independently protect all enabled tools and all 128 feature
+combinations. Protocol tests verify every feature profile, a successful local
+call, invalid-argument refusal and an unchanged catalog after both calls.
+Authentication and network requests are forbidden in these offline tests.
+
+All reported sizes are exact UTF-8 bytes. The names-and-instructions startup
+figure and selected task payloads are client context proxies, excluding host
+wrappers, search overhead, caching and conversation history. Measure actual
+model tokens in the native client acceptance step below.
+
+When adding a feature, review the context report with the feature's contracts
+and task checks. Adjust a budget only when the additional size is justified.
+Keep full source retrieval, continuation indicators, confirmations and every
+existing capability available. Never remove schema fields or narrow the tool
+catalog to make the budget pass.
 
 ## Diagnostic-output migration for the next release
 
