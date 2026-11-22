@@ -1,9 +1,36 @@
 # Token-efficient MCP clients
 
-All tool names, input schemas, safety annotations and handlers remain available. These
-servers advertise their full feature-enabled catalog; a capable **client** indexes
+All operations, safety annotations and handlers remain available. These
+servers advertise the catalog selected at startup, filtered by enabled features; a capable **client** indexes
 it and loads individual schemas on demand. There is no universal MCP server
 `stateless` switch for this and no new generic execution gateway.
+
+## Compact catalog profile
+
+Set `PA_MCP_TOOL_CATALOG=compact` in the MCP server's environment, or set
+`"toolCatalog": "compact"` at the top level of config.json. The environment
+variable takes precedence. Restart the server and reconnect the client so its
+discovery cache refreshes. The default is `compact`; explicit legacy settings remain effective. Changing the profile during
+a session does not change its advertised catalog.
+
+Compact mode replaces 49 related read tools with 22 focused tools. Each requires
+one `operation` selector and the original view's arguments at the top level.
+The handler, required fields, defaults, bounds, errors, pagination and result
+content stay the same. All writes, common flow tools and Canvas discovery tools
+retain their existing names. Feature selection applies in either profile.
+
+The full compact catalog has 290 tools, compared with 317 in legacy mode.
+Both profiles remain within the reviewed payload limits. Tool count reduction
+alone does not measure tokens saved by client deferral. Native client tool
+search remains the larger opportunity for reducing loaded schemas.
+
+Use the [generated migration map](TOOL_REFERENCE.md#compact-catalog-migration)
+to update saved bindings and allowlists. Old names are callable by the server
+but hidden from compact discovery; some hosts refuse unadvertised calls.
+Use `legacy` until those bindings migrate. Clients must retain the full input
+schema. Every view's fields are visible at the root, and operation-specific
+branches retain requirements and defaults. Use explicit `legacy` for saved
+bindings that have not been migrated.
 
 ## Claude Code
 
@@ -93,7 +120,9 @@ and counts; never refresh them just to hide lost capabilities.
 
 `npm run context:check` reads `.github/mcp-context-budgets.json` and exits
 nonzero when a reviewed byte limit is exceeded or a scenario names a missing
-tool. CI runs this gate in addition to the existing contract and feature tests.
+tool. Both startup profiles use the same byte limits and nine scenarios; compact
+mode also fails at 300 tools. Scenario names map to complete grouped descriptors
+without advertising the old aliases. CI runs this gate in addition to the existing contract and feature tests.
 The same gate also runs in the unit suite used by local release checks.
 
 The limits cover the full `tools/list` result, names plus initialization

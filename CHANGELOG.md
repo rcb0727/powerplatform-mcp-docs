@@ -8,6 +8,7 @@
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| [0.17.10](#01710---2026-11-22) | 2026-11-22 | **Compact catalog by default**: 290 tools cover all 317 operations by grouping related reads, with `PA_MCP_TOOL_CATALOG=legacy` as the opt-out; MSAL and better-sqlite3 updates |
 | [0.17.9](#0179---2026-11-16) | 2026-11-16 | **AI Builder prompts and Copilot credit warnings**: four AI Builder prompt tools (inspect, publish versions, copy, run with readback); Copilot Studio tools warn once the tenant passes 80% of its monthly credits; run payloads return as compact JSON so less is cut off; security floors for hono, @hono/node-server and express-rate-limit; Microsoft sign-in libraries 7.2.2 (verified live). 317 tools. |
 | [0.17.8](#0178---2026-11-09) | 2026-11-09 | **undici security fixes, SharePoint, Canvas and Copilot fixes**: `undici` 8.12.3 → 8.12.4 (CVE-2026-116592 critical; CVE-2026-120415, CVE-2026-116630, CVE-2026-120222 high); MSAL 7.2.0; SharePoint file reads resolve library drives (new `get_sharepoint_library_drive`), page with continuation tokens and stream content through authenticated Graph beta by default; Canvas and Copilot authoring report verified state; `update_custom_connector` handles platform-created OAuth connectors; clearer errors for unrecognized parameters. 312 → 313 tools. |
 | [0.17.7](#0177---2026-11-05) | 2026-11-05 | **Agents SDK 1.10.1 and security updates**: `@microsoft/agents-copilotstudio-client` 1.9.1 → 1.10.1, so `execute_copilot_agent` reaches each agent through the conversation endpoints Copilot Studio publishes for it (verified live); `@hono/node-server` floor 2.1.3 (GHSA-rmxm-3fg6-px4f, not reachable here); development-only toolchain advisories closed (esbuild, glob, minimatch) with tsup 9, eslint 10.14 and vitest 5.1. Tool count unchanged at 312. |
@@ -60,6 +61,16 @@
 | [0.7.6](#076---2026-04-23) | 2026-04-23 | Dataverse URL auto-resolution, flow run-ID validation, `$orderby` fix ([#6](https://github.com/rcb0727/powerplatform-mcp-docs/issues/6), [#7](https://github.com/rcb0727/powerplatform-mcp-docs/issues/7), [#8](https://github.com/rcb0727/powerplatform-mcp-docs/issues/8)) |
 
 Older releases are documented below in full.
+
+## [0.17.10] - 2026-11-22
+
+- Compact is the default catalog: 290 tools cover all 317 operations by grouping 49 related reads into 22 tools. Every operation field is visible at the schema root while per-operation requirements, defaults and bounds remain validated. Existing handlers, permissions, responses and errors are preserved. Select `PA_MCP_TOOL_CATALOG=legacy` for saved legacy bindings. Context checks cover both profiles and cap the default catalog below 300 tools.
+
+- The architecture image shows the default catalog count, 290.
+
+- Updated runtime dependencies: msal-node 7.2.3, msal-node-extensions 5.6.3, msal-common 16.17.0 and better-sqlite3 13.2.0, plus development tooling. Verified against a live Sandbox agent with identical tool catalogs.
+
+- Updated the OpenSSF Scorecard workflow action to 2.6.0 (development only, no change for users).
 
 ## [0.17.9] - 2026-11-16
 
