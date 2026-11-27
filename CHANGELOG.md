@@ -8,6 +8,7 @@
 
 | Version | Date | Highlights |
 |---------|------|------------|
+| [0.17.11](#01711---2026-11-27) | 2026-11-27 | **check_for_update, browser sign-in choice and paging flags**: a new `check_for_update` tool, a browser or device-code sign-in choice, desktop flow and work queue lists that say when more rows exist, Work IQ context tools, a current-environment scope for Copilot credit reads, preview agent hook tools, the optional `focused` discovery profile, and fixes for undelivered manual input, Flow API error detail and delete retries; 290 → 293 tools |
 | [0.17.10](#01710---2026-11-22) | 2026-11-22 | **Compact catalog by default**: 290 tools cover all 317 operations by grouping related reads, with `PA_MCP_TOOL_CATALOG=legacy` as the opt-out; MSAL and better-sqlite3 updates |
 | [0.17.9](#0179---2026-11-16) | 2026-11-16 | **AI Builder prompts and Copilot credit warnings**: four AI Builder prompt tools (inspect, publish versions, copy, run with readback); Copilot Studio tools warn once the tenant passes 80% of its monthly credits; run payloads return as compact JSON so less is cut off; security floors for hono, @hono/node-server and express-rate-limit; Microsoft sign-in libraries 7.2.2 (verified live). 317 tools. |
 | [0.17.8](#0178---2026-11-09) | 2026-11-09 | **undici security fixes, SharePoint, Canvas and Copilot fixes**: `undici` 8.12.3 → 8.12.4 (CVE-2026-116592 critical; CVE-2026-120415, CVE-2026-116630, CVE-2026-120222 high); MSAL 7.2.0; SharePoint file reads resolve library drives (new `get_sharepoint_library_drive`), page with continuation tokens and stream content through authenticated Graph beta by default; Canvas and Copilot authoring report verified state; `update_custom_connector` handles platform-created OAuth connectors; clearer errors for unrecognized parameters. 312 → 313 tools. |
@@ -61,6 +62,42 @@
 | [0.7.6](#076---2026-04-23) | 2026-04-23 | Dataverse URL auto-resolution, flow run-ID validation, `$orderby` fix ([#6](https://github.com/rcb0727/powerplatform-mcp-docs/issues/6), [#7](https://github.com/rcb0727/powerplatform-mcp-docs/issues/7), [#8](https://github.com/rcb0727/powerplatform-mcp-docs/issues/8)) |
 
 Older releases are documented below in full.
+
+## [0.17.11] - 2026-11-27
+
+- **Desktop flow and work queue lists now say when more rows exist.** `list_desktop_flows`, `get_desktop_flow_runs`, `list_desktop_flow_connections`, `list_machines`, `list_machine_groups`, `list_work_queues` and `list_work_queue_items` used to stop at their `top` limit without saying so, so a full page read like the complete set. Each now asks Dataverse for one extra row and, only when more exist, adds a line that says so and points at a larger `top` or a narrower query. `list_machine_groups` also marks member counts with `+` when more than 250 machines are visible, because those counts cover only the first 250. Safe because every request is the same read with one extra row, the rows returned are unchanged, and a complete page reads exactly as before.
+
+- **Choose browser or device-code sign-in.** Setup and interactive `--login` offer both routes, and `--auth-method browser` or `--auth-method device-code` selects one directly. The existing `sign_in` tool accepts the same choice through `method`; device code stays its default. Browser sign-in opens on the MCP computer on Windows, macOS and Linux. Existing silent server authentication and tool counts are preserved.
+
+- **Published tool counts match the server again, and two guides have package-safe names.** The README, package description and architecture diagram now state the default catalog's 293 tools (and 320 operations), as the built server lists them. The Copilot hooks and credit scope guides are renamed `docs/AGENT-HOOKS.md` and `docs/CREDIT-SCOPES.md`, with the README links and package file list updated, so the npm package carries no file named for internal evidence. Tool behavior is unchanged.
+
+- **A new `check_for_update` tool answers "is a newer release published?" on request.** The once-per-session notice is appended to a tool result, so it only reaches the person when the assistant repeats it, and in practice it was never seen. The tool takes no inputs, reads only the public npm registry and returns the installed version, the latest version and the exact update command for how this copy was installed (npm, npx, yarn or pnpm). It says so plainly when the registry cannot be reached or the install is already current, and notes when the machine is managed by an organization. It installs nothing. The automatic notice, its opt-out and its organization behavior are unchanged. Tool count 319 to 320.
+
+- **Managed agent account validation has an isolated Early release Sandbox.** The private readiness assessment records the verified environment, guarded read checks and remaining licensing and identity prerequisites. Existing tool catalogs and shared defaults are unchanged.
+
+- **Environment credit reads accept a renamed username for the same selected identity.** Both MSAL providers keep exact tenant, object, home-account and authority binding while accepting a mutable username returned for that account. Selection changes during acquisition still fail closed. No fallback, sign-in, new consent or tool is added.
+
+- **Managed agent account readiness checks the environment release cycle.** The private assessment distinguishes the Early prerequisite from refresh cadence and records the separate environment and tenant prerequisites before provisioning. Existing operations and tool catalogs are unchanged.
+
+- **Copilot credit reads can stay within the current environment.** An optional scope on the existing credit tool reads the documented environment entitlement endpoint, preserves units, timestamps and reported allocation rules, and uses a short identity-bound memory cache. The default tenant reader and its warning cache retain their behavior. Tool counts are unchanged. No historical export or setting change is requested.
+
+- **Managed agent account readiness follows actual Frontier availability.** The private roadmap records current prerequisites, identity and shared-memory boundaries, observed availability and the proof required before provisioning support. Existing user-based operations and tool catalogs are preserved.
+
+- **Work IQ business context has two explicit tools.** Discover semantic models and business-skill metadata, load one skill body on request, or preview and confirm a generated Dataverse Ask answer. Bounded pages and signed cursors bind the selected identity, environment and question. No startup API calls, model management, skill execution, feature toggles or permission changes. Direct Dataverse operations remain available and compact stays below 300 tools.
+
+- **Copilot component tools inspect and edit preview agent hooks.** Readers describe event contracts and recognize native workflow tools. Local lint checks hook files. Updates gain `previewOnly` and `enabled`; scope and component-state changes require a full source hash, the supported harness and a conditional ETag while preserving workflow and connection references. Tool counts and compact defaults are unchanged.
+
+- **`run_flow` and `test_flow` now say when a manual flow's input never arrived.** Power Automate's `/triggers/{name}/run` endpoint can start a Request (manual or Button) flow and report Succeeded while the trigger receives an empty request, so `@triggerBody()` is empty in every action whatever shape the input is posted in (checked live with six payload shapes). Both tools now read the started run's trigger payload and, when input was passed and no body arrived, add a warning that names the fields (never their values) and points to `get_trigger_inputs`. The check adds one read per run and only when input was passed; if that read fails the run report is unchanged.
+
+- **Flow API failures name the HTTP status and service error code**, for example `API error (HTTP 504, GatewayTimeout)`, where they used to read only `API error`. The status and code were already on the error object; they now appear in the message that tools return. Only a short alphanumeric code is shown.
+
+- **`delete_flow` retries Dataverse's transient concurrent-delete conflict (0x80048105).** Back-to-back deletes could fail with it even though a retry succeeds. The delete is retried up to three times with a short wait, a not-found after a retried attempt counts as already deleted, and any other failure is reported at once.
+
+- **Focused discovery validation now covers installed CLI caches and guarded startup/RSS.** The tested default Codex CLI cache does not refresh discovered tools; the isolated refresh experiment and Claude Code do. Compact stays the default. Focused validators initialize only when needed, with existing defaults, bounds and confirmations preserved.
+
+- **The optional `focused` profile loads matching tools on demand.** Two metadata tools reveal enabled operations under their original names with complete contracts and list-change notifications. Per-session bounded catalogs support pinned bindings and scoped cursors. Existing validation, permissions, confirmations and dispatch are retained. Compact remains the default.
+
+- Add an offline discovery benchmark comparing full catalogs, a host tool search proxy, and modeled focused discovery while retaining complete contract metadata. An optional local tokenizer verifies corpus hashes and counts reference tokens. Runtime catalogs and dispatch are unchanged.
 
 ## [0.17.10] - 2026-11-22
 

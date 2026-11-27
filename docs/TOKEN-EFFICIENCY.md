@@ -1,8 +1,9 @@
 # Token-efficient MCP clients
 
-All operations, safety annotations and handlers remain available. These
-servers advertise the catalog selected at startup, filtered by enabled features; a capable **client** indexes
-it and loads individual schemas on demand. There is no universal MCP server
+All operations, safety annotations and handlers remain available. Compact and
+legacy advertise enabled tools at startup; a capable **client** indexes them
+and loads individual schemas on demand. The optional focused pilot advertises
+matching tools as the session searches for them. There is no universal MCP server
 `stateless` switch for this and no new generic execution gateway.
 
 ## Compact catalog profile
@@ -19,7 +20,7 @@ The handler, required fields, defaults, bounds, errors, pagination and result
 content stay the same. All writes, common flow tools and Canvas discovery tools
 retain their existing names. Feature selection applies in either profile.
 
-The full compact catalog has 290 tools, compared with 317 in legacy mode.
+The full compact catalog has 293 tools, compared with 320 in legacy mode.
 Both profiles remain within the reviewed payload limits. Tool count reduction
 alone does not measure tokens saved by client deferral. Native client tool
 search remains the larger opportunity for reducing loaded schemas.
@@ -31,6 +32,87 @@ Use `legacy` until those bindings migrate. Clients must retain the full input
 schema. Every view's fields are visible at the root, and operation-specific
 branches retain requirements and defaults. Use explicit `legacy` for saved
 bindings that have not been migrated.
+
+## Focused discovery pilot
+
+Set `PA_MCP_TOOL_CATALOG=focused` or `"toolCatalog": "focused"` in config.json,
+then restart and reconnect. This is opt-in; compact remains the default.
+Use it with clients that refresh `tools/list` after
+`notifications/tools/list_changed`. Clients that cache their initial catalog
+should use compact or legacy. Compare with the host's native tool search before
+choosing this profile.
+
+In installed-client checks, Claude Code 2.1.229 refreshed focused inventories,
+while Codex CLI/app-server 0.169.0-alpha.11.1 kept its initial inventory with
+the default refresh setting. Use compact for that Codex configuration. A
+process-local experimental refresh flag was tested separately; it is not
+enabled by this server. Verify the actual desktop/runtime configuration before
+choosing focused, since the CLI checks do not establish desktop UI or model
+task behavior.
+
+The initial catalog contains `search_operations` and `describe_operations`.
+Search by task or exact tool name. Search results contain labeled description
+excerpts and safety annotations. Matching operations appear in `tools/list`
+with their complete original descriptions, schemas, annotations and output
+schemas. Inspect the full descriptor there, or use `describe_operations` with
+1 to 10 exact names. Call the original name with its original arguments.
+Discovery never executes a tenant operation. There is no generic executor.
+Compact read aliases are also supported with their existing `operation` field.
+
+Search is deterministic lexical matching of enabled names and descriptions.
+Use `query="*"` to browse every enabled canonical operation. Pages contain at
+most ten results, default five. Continue with `nextCursor`, the same query and
+the same limit. Unknown names and disabled tools are refused when describing.
+An ambiguous search can include both reads and writes; inspect the complete
+contract and the existing confirmation requirements before acting.
+
+The visible catalog holds at most 32 operation descriptors by default, plus
+the two discovery tools. Recently used dynamic descriptors stay visible;
+older ones are evicted and can be found again. Explicit configured preloads
+stay visible. Saved canonical calls still use the original dispatch, even
+when their descriptors are currently hidden. Feature checks, authentication,
+environment resolution, input limits, validation, confirmations and error
+handling still run for every operation.
+
+Optional configuration:
+
+```json
+{
+  "toolCatalog": "focused",
+  "focusedCatalog": {
+    "maxTools": 32,
+    "preload": ["list_flows", "get_flow", "inspect_flow_versions"]
+  }
+}
+```
+
+`PA_MCP_FOCUSED_TOOLS` overrides preloads with comma-separated exact names.
+`PA_MCP_FOCUSED_MAX_TOOLS` overrides the operation limit. The limit must be an
+integer from 10 to 297 and leave ten free slots beyond the preloads. Invalid,
+duplicate, unknown or disabled preload names fail startup. Even at the maximum,
+the visible list stays below 300 tools. These variables affect the server
+subprocess, and setup preserves valid saved focused settings.
+
+Each transport session owns its discovery state. Account, application,
+environment or enabled-feature changes clear dynamically loaded descriptors
+and invalidate cursors. Enabled preloads remain. Descriptors contain static
+tool metadata, not API data or resource dropdowns. Reconnecting starts a fresh
+session. This profile reduces discovery payloads; it does not defer Node module
+imports or claim lower process memory.
+
+For local development, `npm run context:focused` measures ten scripted SDK
+discovery tasks without authentication or tenant requests. It includes search
+results, list refreshes and complete contract descriptions. The comparison is
+against an eager compact catalog, not native host tool search or actual model
+prompt tokens. Model selection and task quality require native-client testing.
+
+For installed-client inventory checks in a source checkout, use Python 3.11 or
+newer with `python3 scripts/check-focused-clients.py --report /tmp/focused-clients.json`.
+The check uses offline fixtures, makes no model request and does not change
+global client settings. It reports cache compatibility separately from model
+prompt usage. The guarded startup/RSS probe is
+`scripts/measure-focused-startup.py`; it requires a built main baseline and the
+existing Sandbox `live-test.mjs` helper.
 
 ## Claude Code
 

@@ -97,7 +97,7 @@ A wizard starts. It works out your situation first and only asks a question when
 The five steps:
 
 1. **Find your app** — the wizard looks for an existing setup automatically: a saved config, your organization's `org.json`, or an app it can see through an already-signed-in Azure CLI. Found → nothing to type. Not found → one question: **paste the Client ID** your IT team gave you (it's checked against Microsoft on the spot, so a typo fails in seconds), or **press Enter to create a new app registration**. The create path is for IT or the first person at an org: it picks a permission preset (**Everyday automation** recommended — press Enter to accept), signs into Azure, creates the app with only those permissions, and grants org-wide admin consent when your account is allowed to.
-2. **Sign in** — a device code is shown; open the link on any device and log in with your **work** account. Admin consent is verified by *doing*: only if Microsoft reports the app isn't approved yet do you see the approval link (or a ready-to-send IT request). Approved apps never show a consent step.
+2. **Sign in:** choose device code or browser. Device code works from any device; browser sign-in opens on this computer. Log in with your **work** account. Admin consent is verified by *doing*: only if Microsoft reports the app isn't approved yet do you see the approval link (or a ready-to-send IT request). Approved apps never show a consent step.
 3. **Pick your environment** — if you only have one (most people), it's selected automatically. Otherwise type the number next to the one you want (the recommended one is marked ⭐).
 4. **Save** — it writes your settings automatically, including which feature scopes are enabled.
 5. **Connect your AI app** — the wizard looks for AI apps installed on your machine. If it finds exactly one, it's a single yes/no; otherwise detected apps are listed first (marked "detected") — type a number. It wires itself up — no JSON editing.
@@ -363,12 +363,16 @@ A rollback changes only the installed package — your configuration and sign-in
 
 ## Signing in again
 
-Sign-ins don't last forever — tokens expire after long inactivity, and IT policy changes (like new MFA rules) can invalidate them. When tools start reporting missing credentials, you don't need to re-run setup:
+When credentials expire, run `powerautomate-mcp --login`. An interactive terminal offers device code or browser sign-in. To select directly:
 
-- **In chat:** ask your AI assistant to *"sign in to Power Platform"* — the `sign_in` tool returns a code and link right in the conversation.
-- **In a terminal:** `powerautomate-mcp --login` — signs you in again using your existing setup, then verifies it worked.
+```bash
+powerautomate-mcp --login --auth-method browser
+powerautomate-mcp --login --auth-method device-code
+```
 
-Both use Microsoft's standard sign-in page in your own browser, MFA included. Nothing ever asks for your password outside microsoft.com.
+The same flag works with `--setup`. In chat, use `sign_in` with `{"method":"browser"}` or `{"method":"device-code"}`. Omitting `method` keeps device code. Browser sign-in opens on the MCP computer and uses a localhost callback; device code can be completed from any device and supports remote or headless sessions. Both routes support MFA and remain subject to organization policies. Enter credentials only on the Microsoft sign-in page.
+
+For browser sign-in, an administrator must register `http://localhost` under Mobile and desktop applications on the existing Entra app. New registrations created by setup include it. Finish the current sign-in, or restart the MCP to cancel a waiting browser sign-in, before switching methods.
 
 ---
 
@@ -460,6 +464,10 @@ If your tenant **requires admin consent for all applications** (most enterprises
 
 Skipped feature scopes are recorded in `features.enabled`; their tools are hidden and their auth checks are skipped. Without the PowerApps Service permission, connector and Power Apps tools are unavailable. Without the BAP Admin API permission, admin tools and Dataverse URL auto-discovery are unavailable.
 
+For the optional focused-discovery profile and saved-binding preloads, see
+[focused pilot configuration](docs/TOKEN-EFFICIENCY.md#focused-discovery-pilot).
+Compact remains the default. Focused requires clients that refresh tools dynamically.
+
 ## Mass deployment (Intune / GPO / Jamf)
 
 Rolling out to a whole team means IT does everything once, and every other user's onboarding is a single sign-in from chat — no terminal, no wizard, no Client ID.
@@ -479,7 +487,7 @@ Rolling out to a whole team means IT does everything once, and every other user'
 
 **Per user: nothing.** With the org file present, the MCP server starts without any per-user setup. The first time they ask their AI app to do something real, it shows a Microsoft sign-in code right in the chat (the `sign_in` tool); they enter it on any device and they're working. Running `powerautomate-mcp --setup` also works — it finds the org file and skips straight to sign-in.
 
-**Before rollout, check Conditional Access.** Sign-in uses Microsoft's device-code flow. If your tenant's Conditional Access policies block device-code grants, allow them for this app first — otherwise every user's sign-in fails identically on day one.
+**Before rollout, check sign-in requirements.** If your tenant blocks device-code grants, users can choose browser sign-in. Browser mode requires `http://localhost` under the app registration's Mobile and desktop applications platform. Both routes remain subject to Conditional Access, app consent and user access requirements.
 
 **Expect periodic re-sign-in under sign-in frequency policies.** If your tenant enforces a Conditional Access sign-in frequency, Microsoft expires every user's session on that schedule and no client can renew it silently — that's the policy working, not the tool failing. When it happens, the error names the policy and the fix is one `sign_in` from chat. If the cadence is disruptive, IT can scope the sign-in frequency policy to exclude this app.
 
